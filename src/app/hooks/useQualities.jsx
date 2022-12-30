@@ -1,5 +1,6 @@
 import React, { useEffect, useContext, useState } from "react";
 import qualityService from "../services/quality.service";
+import { toast } from "react-toastify";
 
 const QualitiesContext = React.createContext();
 
@@ -19,8 +20,7 @@ const QualitiesProvider = ({ children }) => {
                 setQualities(content);
                 setLoading(false);
             } catch (error) {
-                const { message } = error.response.data;
-                setError(message);
+                errorCatcher(error);
             }
         };
         getQualities();
@@ -43,8 +43,7 @@ const QualitiesProvider = ({ children }) => {
             );
             return content;
         } catch (error) {
-            const { message } = error.response.data;
-            setError(message);
+            errorCatcher(error);
         }
     };
 
@@ -54,8 +53,7 @@ const QualitiesProvider = ({ children }) => {
             setQualities((prevState) => [...prevState, content]);
             return content;
         } catch (error) {
-            const { message } = error.response.data;
-            setError(message);
+            errorCatcher(error);
         }
     };
 
@@ -67,16 +65,27 @@ const QualitiesProvider = ({ children }) => {
             })
             return content;
         } catch (error) {
-            const { message } = error.response.data;
-            setError(message);
+            errorCatcher(error);
         }
     };
+
+    function errorCatcher(error) {
+        const { message } = error?.response?.data || { message: "undefined" };
+        setError(message);
+    }
+
+    useEffect(() => {
+        if (error !== null) {
+            toast(error);
+            setError(null);
+        }
+    }, [error]);
 
     return (
         <QualitiesContext.Provider
             value={{ qualities, getQuality, updateQuality, addQuality, deleteQuality }}
         >
-            {!isLoading ? children : <h1>Qualities Loading...</h1>}
+            { !isLoading ? children : <h1>Qualities Loading...</h1> }
         </QualitiesContext.Provider>
     );
 };
